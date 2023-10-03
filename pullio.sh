@@ -35,7 +35,7 @@ compose_pull_wrapper() {
         "${DOCKER_BINARY}" run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$1:$1" -w="$1" linuxserver/docker-compose pull "$2"
     else
         cd "$1" || exit 1
-        "${COMPOSE_BINARY}" pull "$2"
+        "${COMPOSE_BINARY}" -f "$3" pull "$2"
     fi
 }
 
@@ -149,6 +149,7 @@ for i in "${!containers[@]}"; do
     docker_compose_service=$("${DOCKER_BINARY}" inspect --format='{{ index .Config.Labels "com.docker.compose.service" }}' "$container_name")
     docker_compose_version=$("${DOCKER_BINARY}" inspect --format='{{ index .Config.Labels "com.docker.compose.version" }}' "$container_name")
     docker_compose_workdir=$("${DOCKER_BINARY}" inspect --format='{{ index .Config.Labels "com.docker.compose.project.working_dir" }}' "$container_name")
+    docker_compose_file=$("${DOCKER_BINARY}" inspect --format='{{ index .Config.Labels "com.docker.compose.project.config_files" }}' "$container_name")
 
     old_opencontainers_image_version=$("${DOCKER_BINARY}" inspect --format='{{ index .Config.Labels "org.opencontainers.image.version" }}' "$container_name")
     old_opencontainers_image_revision=$("${DOCKER_BINARY}" inspect --format='{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$container_name")
@@ -170,7 +171,7 @@ for i in "${!containers[@]}"; do
         fi
 
         echo "$container_name: Pulling image..."
-        if ! compose_pull_wrapper "$docker_compose_workdir" "${docker_compose_service}"; then
+        if ! compose_pull_wrapper "$docker_compose_workdir" "${docker_compose_service}" "${docker_compose_file}"; then
             echo "$container_name: Pulling failed!"
         fi
 
