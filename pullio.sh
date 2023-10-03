@@ -44,7 +44,7 @@ compose_up_wrapper() {
         "${DOCKER_BINARY}" run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$1:$1" -w="$1" linuxserver/docker-compose up -d --always-recreate-deps "$2"
     else
         cd "$1" || exit 1
-        "${COMPOSE_BINARY}" up -d --always-recreate-deps "$2"
+        "${COMPOSE_BINARY}" -f "$3" up -d --always-recreate-deps "$2"
     fi
 }
 
@@ -191,7 +191,7 @@ for i in "${!containers[@]}"; do
                 "${pullio_script_update[@]}"
             fi
             echo "$container_name: Updating container..."
-            if compose_up_wrapper "$docker_compose_workdir" "${docker_compose_service}"; then
+            if compose_up_wrapper "$docker_compose_workdir" "${docker_compose_service}" "${docker_compose_file}"; then
                 status="I just updated myself.\nFeeling brand spanking new again!"
                 status_generic="update_success"
                 color=3066993
